@@ -1,0 +1,21 @@
+﻿/*メモ帳が終了するまで待つサンプル
+*/
+debuginfo 1;
+
+#dll=loaddll(currentmacrodirectory+"\\..\\hm_process\\bin\\Release\\x64\\hm_process.dll");
+#handle=dllfuncw(#dll,"Spawn","notepad","");
+debuginfo"#handle="+str(#handle);
+
+#success=dllfuncw(#dll,"Start",#handle);
+
+#exit=0;
+while(#exit==0){
+	#exit=dllfuncw(#dll,"WaitForExitWithTimeOut",#handle,1000);
+	debuginfo"Loop: #exit="+str(#exit);
+
+	/*メモ帳が終了するまでの間にここで独自の処理（バックグランドタスク）を動かす。
+	*/
+}
+
+freedll(#dll);
+debuginfo"Finish";
