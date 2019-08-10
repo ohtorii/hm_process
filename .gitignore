@@ -1,0 +1,5 @@
+.vs/
+hm_process/bin/
+hm_process/obj/
+hm_process/Properties/AssemblyInfo.cs
+packages/DllExport.1.6.3/
