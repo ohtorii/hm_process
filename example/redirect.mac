@@ -1,0 +1,30 @@
+﻿/*標準出力と標準エラーを取得するサンプル
+*/
+debuginfo 1;
+
+#dll=loaddll(currentmacrodirectory+"\\..\\hm_process\\bin\\Release\\x64\\hm_process.dll");
+#handle=dllfuncw(#dll,"SpawnWithRedirect","cmd.exe","/cdir c:\\Windows\\System32",true,true);
+#success=dllfuncw(#dll,"Start",#handle);
+
+$stdout="";
+#exit=false;
+while(#exit==false){
+	#exit=dllfuncw(#dll,"HasExited",#handle);
+	/*ここで標準出力を取得します。
+	*/
+	if($stdout!=""){
+		debuginfo $stdout;
+	}
+	$stdout=dllfuncstrw(#dll,"ReadStandardOutput",#handle);
+}
+
+//残りの標準出力を取得する
+while($stdout!=""){
+	debuginfo $stdout;
+	$stdout=dllfuncstrw(#dll,"ReadStandardOutput",#handle);
+}
+#success=dllfuncw(#dll,"Destroy",#handle);
+
+debuginfo "Destroy="+str(#success);
+freedll(#dll);
+debuginfo"Finish";
