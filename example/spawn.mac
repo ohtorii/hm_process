@@ -1,4 +1,4 @@
-﻿/*メモ帳が終了するまで待つサンプル
+﻿/*プロセス（メモ帳）を起動し終了するまで待つ
 */
 debuginfo 1;
 
@@ -17,5 +17,6 @@ while(#exit==0){
 	#counter = #counter + 1;
 }
 
+#success=dllfuncw(#dll,"Destroy",#handle);
 freedll(#dll);
 debuginfo"Finish";

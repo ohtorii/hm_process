@@ -119,6 +119,48 @@ namespace hm_process
 			return current_handle;
 		}
 
+		public static bool SetArguments(int handle,string argments)
+		{
+			try
+			{
+				_process[handle]._process.StartInfo.Arguments = argments;
+				return true;
+			}
+			catch (Exception)
+			{
+				//pass
+			}
+			return false;
+		}
+
+		public static bool SetCreateNoWindow(int handle, bool value)
+		{
+			try
+			{
+				_process[handle]._process.StartInfo.CreateNoWindow = value;
+				return true;
+			}
+			catch (Exception)
+			{
+				//pass
+			}
+			return false;
+		}
+
+		public static bool SetWorkingDirectory(int handle, string value)
+		{
+			try
+			{
+				_process[handle]._process.StartInfo.WorkingDirectory = value;
+				return true;
+			}
+			catch (Exception)
+			{
+				//pass
+			}
+			return false;
+		}
+		
 		public static bool Start(int handle)
 		{
 			try

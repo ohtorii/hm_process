@@ -1,30 +1,47 @@
-﻿/*標準出力と標準エラーを取得するサンプル
+﻿/*標準出力と標準エラーを取得する
 */
-debuginfo 1;
+newfile;
 
 #dll=loaddll(currentmacrodirectory+"\\..\\hm_process\\bin\\Release\\x64\\hm_process.dll");
-#handle=dllfuncw(#dll,"SpawnWithRedirect","cmd.exe","/cdir c:\\Windows\\System32",true,true);
+#handle=dllfuncw(#dll,"SpawnWithRedirect","cmd.exe","",true,true);
+
+//メモ：約5000個のファイルを列挙します。（環境依存ですが・・・）
+#success=dllfuncw(#dll,"SetArguments",#handle,"/cdir c:\\Windows\\System32");
+//黒いウインドウを非表示にする
+#success=dllfuncw(#dll,"SetCreateNoWindow",#handle,true);
 #success=dllfuncw(#dll,"Start",#handle);
 
-$stdout="";
 #exit=false;
 while(#exit==false){
 	#exit=dllfuncw(#dll,"HasExited",#handle);
-	/*ここで標準出力を取得します。
-	*/
-	if($stdout!=""){
-		debuginfo $stdout;
-	}
-	$stdout=dllfuncstrw(#dll,"ReadStandardOutput",#handle);
+
+	//
+	//標準出力と標準エラーを取得します。
+	//
+	insert dllfuncstrw(#dll,"ReadStandardOutput",#handle);
+	insert dllfuncstrw(#dll,"ReadStandardError",#handle);
+
+	//
+	//何か別の処理（バックグランドタスク）をここで行います。
+	//
 }
 
-//残りの標準出力を取得する
-while($stdout!=""){
-	debuginfo $stdout;
-	$stdout=dllfuncstrw(#dll,"ReadStandardOutput",#handle);
+//
+//残りの標準出力とエラーを取得します。
+//
+$text=dllfuncstrw(#dll,"ReadStandardOutput",#handle);
+while($text!=""){
+	insert $text;
+	$text=dllfuncstrw(#dll,"ReadStandardOutput",#handle);
 }
+$text=dllfuncstrw(#dll,"ReadStandardError",#handle);
+while($text!=""){
+	insert $text;
+	$text=dllfuncstrw(#dll,"ReadStandardError",#handle);
+}
+
+//
+//終了処理
+//
 #success=dllfuncw(#dll,"Destroy",#handle);
-
-debuginfo "Destroy="+str(#success);
 freedll(#dll);
-debuginfo"Finish";
