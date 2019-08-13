@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Threading;
 using System.Runtime.InteropServices;
 
 
@@ -10,7 +12,15 @@ namespace hm_process
 {
     public class dll_interface
     {
-        [DllExport]
+
+		[DllExport]
+		public static IntPtr Finish()
+		{
+			ProcessHolder.Finish();
+			return new IntPtr(1);
+		}
+
+		[DllExport]
         public static IntPtr Spawn(IntPtr filename, IntPtr arguments)
         {
 			return new IntPtr(
@@ -117,7 +127,13 @@ namespace hm_process
 			}
 			return new IntPtr(0);   //false
 		}
+		
 
-
+		[DllExport]
+		public static IntPtr DllDetachFunc_After_Hm866(IntPtr n)
+		{
+			ProcessHolder.Finish();
+			return new IntPtr(0);
+		}
 	}
 }
