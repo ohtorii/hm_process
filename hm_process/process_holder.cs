@@ -13,6 +13,9 @@ namespace hm_process
 {
 	class ProcessHolder
 	{
+		public static readonly int INVALID_HANDLE = 0;
+		public static readonly int FIRST_HANDLE = 1;
+
 		class ProcessInstance
 		{ 
 			public class Redirect
@@ -27,20 +30,23 @@ namespace hm_process
 				const int _max_read_line=100;
 
 				public List<string>	_lines = new List<string>();
-				IntPtr _ptr;
-				object _sync = new object();
+				IntPtr _ptr=IntPtr.Zero;
 
 				~Redirect()
 				{
-					Marshal.FreeHGlobal(_ptr);
-					_ptr = IntPtr.Zero;
+					if (_ptr != IntPtr.Zero)
+					{
+						Marshal.FreeHGlobal(_ptr);
+						_ptr = IntPtr.Zero;
+					}
+					_lines = null;
 				}
 
 				public IntPtr Read()
 				{
 					string result;
 
-					lock (_sync)
+					lock (_lines)
 					{
 						result = string.Join("\n", _lines);
 						_lines.Clear();
@@ -66,57 +72,144 @@ namespace hm_process
 						Thread.Sleep(10);
 					}
 
-					lock (_sync)
+					lock (_lines)
 					{
 						_lines.Add(e.Data);
 					}
 				}
 			}
+			
+			public bool Destroy()
+			{
+				try {
+					var p = _process;
 
+					_process = null;
+					_stderr = null;
+					_stdout = null;
+
+					if (p.HasExited)
+					{
+						p.Close();
+						return true;
+					}
+
+					try
+					{
+						p.CancelErrorRead();
+						p.CancelOutputRead();
+						p.CloseMainWindow();
+					}
+					catch (Exception)
+					{
+						//pass
+					}
+
+					try
+					{
+						p.Close();
+					}
+					catch (Exception)
+					{
+						//pass
+					}
+					return true;
+				}
+				catch (Exception)
+				{
+					//pass
+				}
+				return false;
+			}
 
 			public Process _process = new Process();
 			public Redirect _stdout = new Redirect();
 			public Redirect _stderr = new Redirect();
+			//public bool _auto_destroy=false;///プロセス終了時に自動削除するかどうか。
+		}
+
+		public static void Finish()
+		{
+			if (_process==null)
+			{
+				return;
+			}
+
+			lock (_process)
+			{
+				foreach(var item in _process)
+				{
+					item.Value.Destroy();
+				}
+			}
+
+			_next_handle = FIRST_HANDLE;
+			_process = null;
 		}
 
 		public static int Spawn(string filename, string arguments)
 		{
-			var item = new ProcessInstance();
-			var start = item._process.StartInfo;
+			if (_process == null)
+			{
+				return INVALID_HANDLE;
+			}
+			try
+			{
+				var item = new ProcessInstance();
+				var start = item._process.StartInfo;
 
-			start.FileName = filename;
-			start.Arguments= arguments;
+				start.FileName = filename;
+				start.Arguments = arguments;
 
-			var current_handle = _next_handle;
-			_process[current_handle] = item;
-			++_next_handle;
-			return current_handle;
+				var current_handle = _next_handle;
+				_process[current_handle] = item;
+				++_next_handle;
+				return current_handle;
+			}
+			catch (Exception)
+			{
+				//pass
+			}
+			return INVALID_HANDLE;
 		}
 
 		public static int SpawnWithRedirect(string filename, string arguments, bool redirect_stndard_output, bool redirect_standard_error)
 		{
-			var item = new ProcessInstance();
-			var start = item._process.StartInfo;
-
-			start.FileName = filename;
-			start.Arguments = arguments;
-			start.RedirectStandardOutput = redirect_stndard_output;
-			start.RedirectStandardError = redirect_standard_error;
-
-			start.UseShellExecute = false;
-			if (redirect_stndard_output)
+			if (_process == null)
 			{
-				item._process.OutputDataReceived += item._stdout.Received;
-			}
-			if (redirect_standard_error)
-			{
-				item._process.ErrorDataReceived += item._stderr.Received;
+				return INVALID_HANDLE;
 			}
 
-			var current_handle = _next_handle;
-			_process[current_handle] = item;
-			++_next_handle;
-			return current_handle;
+			try
+			{
+				var item = new ProcessInstance();
+				var start = item._process.StartInfo;
+
+				start.FileName = filename;
+				start.Arguments = arguments;
+				start.RedirectStandardOutput = redirect_stndard_output;
+				start.RedirectStandardError = redirect_standard_error;
+
+				start.UseShellExecute = false;
+				if (redirect_stndard_output)
+				{
+					item._process.OutputDataReceived += item._stdout.Received;
+				}
+				if (redirect_standard_error)
+				{
+					item._process.ErrorDataReceived += item._stderr.Received;
+				}
+
+				var current_handle = _next_handle;
+				_process[current_handle] = item;
+				++_next_handle;
+				return current_handle;
+			}
+			catch (Exception)
+			{
+				//pass
+			}
+			return INVALID_HANDLE;
 		}
 
 		public static bool SetArguments(int handle,string argments)
@@ -165,6 +258,11 @@ namespace hm_process
 		{
 			try
 			{
+				/*if(_inspector==null){
+					_inspector = Task.Run(() => InspectAsync(_inspector_token.Token));
+				}
+				*/
+
 				var item = _process[handle];
 				item._process.Start();
 
@@ -267,61 +365,60 @@ namespace hm_process
 		{
 			try
 			{
-				var p=_process[handle]._process;
-				_process.Remove(handle);
-				Debug.Write("C#@1");
-				//p.Refresh();
+				ProcessInstance p;
 
-				if (p.HasExited)
+				lock (_process)
 				{
-					Debug.Write("C# Exit start");
-					//p.CloseMainWindow();
-					p.Close();
-					Debug.Write("C# Exit finish");
-					return true;
+					p = _process[handle];
+					_process.Remove(handle);
 				}
-
-				try
-				{
-					Debug.Write("C#@2");
-					p.CancelErrorRead();
-					Debug.Write("C#@3");
-					p.CancelOutputRead();
-					Debug.Write("C#@4");
-					p.CloseMainWindow();
-					Debug.Write("C#@5");
-										//p.Kill();
-					//p.WaitForExit(1000);
-				}
-				catch (Exception)
-				{
-					//pass
-				}
-				Debug.Write("C#@5.5");
-				try
-				{
-					p.Close();
-					Debug.Write("C#@6");
-				}
-				catch (Exception)
-				{
-					//pass
-				}
-				Debug.Write("C#@7");
-				return true;
+				return p.Destroy();
 			}
 			catch (Exception)
 			{
 				//pass
-				Debug.Write("C#@8");
 			}
-			Debug.Write("C#@9");
 			return false;
 		}
 
+		/*
+		static void InspectAsync(CancellationToken cancelToken)
+		{
+			var remove_handles = new List<int>();
 
-		static int _next_handle = 1;
+			while (! cancelToken.IsCancellationRequested){
+				lock (_process)
+				{
+					foreach (var item in _process)
+					{
+						if (!item.Value._auto_destroy)
+						{
+							continue;
+						}
+						if (! item.Value._process.HasExited)
+						{
+							continue;
+						}
+						remove_handles.Add(item.Key);
+					}
+				}
+
+				foreach(var handle in remove_handles)
+				{
+					Destroy(handle);
+				}
+				remove_handles.Clear();
+				
+				Thread.Sleep(5000);
+
+			}
+		}
+		*/
+
+		static int _next_handle = FIRST_HANDLE;
 		static Dictionary<int, ProcessInstance> _process = new Dictionary<int, ProcessInstance>();
 
+		//static Task	_inspector=null;
+		//static CancellationTokenSource _inspector_token=new CancellationTokenSource();
 	}
 }
