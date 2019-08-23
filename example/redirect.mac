@@ -1,7 +1,7 @@
 ﻿/*標準出力と標準エラーを取得する
 */
 newfile;
-
+debuginfo 1;
 #dll=loaddll(currentmacrodirectory+"\\..\\hm_process\\bin\\Release\\x64\\hm_process.dll");
 #handle=dllfuncw(#dll,"SpawnWithRedirect","cmd.exe","",true,true);
 
@@ -25,7 +25,7 @@ while(#exit==false){
 	//何か別の処理（バックグランドタスク）をここで行います。
 	//
 }
-
+debuginfo "@1";
 //
 //残りの標準出力とエラーを取得します。
 //
@@ -39,9 +39,11 @@ while($text!=""){
 	insert $text;
 	$text=dllfuncstrw(#dll,"ReadStandardError",#handle);
 }
-
+debuginfo "@2";
 //
 //終了処理
 //
 #success=dllfuncw(#dll,"Destroy",#handle);
+debuginfo "@3";
 freedll(#dll);
+debuginfo "@finish";
