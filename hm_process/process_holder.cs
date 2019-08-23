@@ -15,6 +15,14 @@ namespace hm_process
 	{
 		public static readonly int INVALID_HANDLE = 0;
 		public static readonly int FIRST_HANDLE = 1;
+		static IntPtr _static_stdout_string = IntPtr.Zero;
+		static IntPtr _static_stderr_string = IntPtr.Zero;
+
+
+		~ProcessHolder()
+		{
+			Destroy();
+		}
 
 		class ProcessInstance
 		{ 
@@ -42,7 +50,7 @@ namespace hm_process
 					_lines = null;
 				}
 
-				public IntPtr Read()
+				public string ReadAsString()
 				{
 					string result;
 
@@ -51,12 +59,16 @@ namespace hm_process
 						result = string.Join("\n", _lines);
 						_lines.Clear();
 					}
+					return result;
+				}
 
+				public IntPtr ReadAsIntPtr()
+				{
 					//前回の文字列を解放する
 					Marshal.FreeHGlobal(_ptr);
 					_ptr = IntPtr.Zero;
 					//今回の文字列を確保する
-					_ptr = Marshal.StringToHGlobalUni(result);
+					_ptr = Marshal.StringToHGlobalUni(ReadAsString());
 					return _ptr;
 				}
 
@@ -87,6 +99,14 @@ namespace hm_process
 					_process = null;
 					_stderr = null;
 					_stdout = null;
+
+					try
+					{
+						p.Kill();
+					}
+					catch (Exception) {
+						//pass
+					}
 
 					if (p.HasExited)
 					{
@@ -128,23 +148,44 @@ namespace hm_process
 			//public bool _auto_destroy=false;///プロセス終了時に自動削除するかどうか。
 		}
 
-		public static void Finish()
+		static void FreeStaticStdoutString()
 		{
-			if (_process==null)
+			if (_static_stdout_string == IntPtr.Zero)
 			{
 				return;
 			}
+			Marshal.FreeHGlobal(_static_stdout_string);
+			_static_stdout_string = IntPtr.Zero;
+		}
 
-			lock (_process)
+		static void FreeStaticStderrString()
+		{
+			if (_static_stderr_string == IntPtr.Zero)
 			{
-				foreach(var item in _process)
+				return;
+			}
+			Marshal.FreeHGlobal(_static_stderr_string);
+			_static_stderr_string = IntPtr.Zero;
+		}
+
+		public static void Destroy()
+		{ 
+			if (_process != null)
+			{
+				lock (_process)
 				{
-					item.Value.Destroy();
+					foreach (var item in _process)
+					{
+						item.Value.Destroy();
+					}
 				}
+				_process = null;
 			}
 
 			_next_handle = FIRST_HANDLE;
-			_process = null;
+
+			FreeStaticStdoutString();
+			FreeStaticStderrString();
 		}
 
 		public static int Spawn(string filename, string arguments)
@@ -286,7 +327,7 @@ namespace hm_process
 		{
 			try
 			{
-				return _process[handle]._stdout.Read();
+				return _process[handle]._stdout.ReadAsIntPtr();
 			}
 			catch (Exception)
 			{
@@ -299,7 +340,47 @@ namespace hm_process
 		{
 			try
 			{
-				return _process[handle]._stderr.Read();
+				return _process[handle]._stderr.ReadAsIntPtr();
+			}
+			catch (Exception)
+			{
+				//pass
+			}
+			return new IntPtr();
+		}
+
+		public static IntPtr ReadStandardOutputAll()
+		{
+			try
+			{
+				FreeStaticStdoutString();
+				string all="";
+				foreach(var item in _process)
+				{
+					all += item.Value._stdout.ReadAsString();
+				}
+				_static_stdout_string = Marshal.StringToHGlobalUni(all);
+				return _static_stdout_string;
+			}
+			catch (Exception)
+			{
+				//pass
+			}
+			return new IntPtr();
+		}
+		
+		public static IntPtr ReadStandardErrorAll()
+		{
+			try
+			{
+				FreeStaticStderrString();
+				string all = "";
+				foreach (var item in _process)
+				{
+					all += item.Value._stderr.ReadAsString();
+				}
+				_static_stderr_string = Marshal.StringToHGlobalUni(all);
+				return _static_stderr_string;
 			}
 			catch (Exception)
 			{
