@@ -16,7 +16,7 @@ namespace hm_process
 		[DllExport]
 		public static IntPtr Finish()
 		{
-			ProcessHolder.Finish();
+			ProcessHolder.Destroy();
 			return new IntPtr(1);
 		}
 
@@ -84,6 +84,18 @@ namespace hm_process
 		}
 
 		[DllExport]
+		public static IntPtr ReadStandardOutputAll()
+		{
+			return ProcessHolder.ReadStandardOutputAll();
+		}
+
+		[DllExport]
+		public static IntPtr ReadStandardErrorAll()
+		{
+			return ProcessHolder.ReadStandardErrorAll();
+		}
+
+		[DllExport]
 		public static IntPtr WaitForExit(IntPtr handle)
 		{
 			if (ProcessHolder.WaitForExit(handle.ToInt32()))
@@ -132,7 +144,7 @@ namespace hm_process
 		[DllExport]
 		public static IntPtr DllDetachFunc_After_Hm866(IntPtr n)
 		{
-			ProcessHolder.Finish();
+			ProcessHolder.Destroy();
 			return new IntPtr(0);
 		}
 	}
