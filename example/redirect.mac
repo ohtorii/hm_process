@@ -9,6 +9,7 @@ debuginfo 1;
 #success=dllfuncw(#dll,"SetArguments",#handle,"/cdir c:\\Windows\\System32");
 //黒いウインドウを非表示にする
 #success=dllfuncw(#dll,"SetCreateNoWindow",#handle,true);
+//プロセスを開始する
 #success=dllfuncw(#dll,"Start",#handle);
 
 #exit=false;
