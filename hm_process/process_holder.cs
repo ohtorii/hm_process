@@ -178,8 +178,8 @@ namespace hm_process
 					{
 						item.Value.Destroy();
 					}
-				}
-				_process = null;
+                    _process.Clear();
+                }
 			}
 
 			_next_handle = FIRST_HANDLE;
@@ -216,41 +216,41 @@ namespace hm_process
 
 		public static int SpawnWithRedirect(string filename, string arguments, bool redirect_stndard_output, bool redirect_standard_error)
 		{
-			if (_process == null)
+            if (_process == null)
 			{
-				return INVALID_HANDLE;
+                return INVALID_HANDLE;
 			}
 
 			try
 			{
-				var item = new ProcessInstance();
-				var start = item._process.StartInfo;
+                var item    = new ProcessInstance();
+                var start   = item._process.StartInfo;
 
-				start.FileName = filename;
+                start.FileName  = filename;
 				start.Arguments = arguments;
-				start.RedirectStandardOutput = redirect_stndard_output;
-				start.RedirectStandardError = redirect_standard_error;
+				start.RedirectStandardOutput    = redirect_stndard_output;
+				start.RedirectStandardError     = redirect_standard_error;
 
 				start.UseShellExecute = false;
-				if (redirect_stndard_output)
-				{
-					item._process.OutputDataReceived += item._stdout.Received;
-				}
-				if (redirect_standard_error)
-				{
-					item._process.ErrorDataReceived += item._stderr.Received;
+                if (redirect_stndard_output){
+                    item._process.OutputDataReceived += item._stdout.Received;
 				}
 
-				var current_handle = _next_handle;
-				_process[current_handle] = item;
-				++_next_handle;
-				return current_handle;
+                if (redirect_standard_error){
+                    item._process.ErrorDataReceived += item._stderr.Received;
+				}
+
+                var current_handle = _next_handle;
+                _process[current_handle] = item;
+
+                ++_next_handle;
+                return current_handle;
 			}
 			catch (Exception)
 			{
 				//pass
 			}
-			return INVALID_HANDLE;
+            return INVALID_HANDLE;
 		}
 
 		public static bool SetArguments(int handle,string argments)
