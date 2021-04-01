@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>cc6a1327-b7d6-4830-a6a4-a782b094b2c8</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>hm_process_shared</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)ProcessHolder.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ProcessInstance.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RedirectStdin.cs" />
+  </ItemGroup>
+</Project>

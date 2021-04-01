@@ -5,7 +5,13 @@ VisualStudioVersion = 15.0.28307.757
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "hm_process", "hm_process\hm_process.csproj", "{748CA0CE-31A9-42B0-8420-1862DF231E3B}"
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "hm_process_shared", "hm_process_shared\hm_process_shared.shproj", "{CC6A1327-B7D6-4830-A6A4-A782B094B2C8}"
+EndProject
 Global
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		hm_process_shared\hm_process_shared.projitems*{748ca0ce-31a9-42b0-8420-1862df231e3b}*SharedItemsImports = 4
+		hm_process_shared\hm_process_shared.projitems*{cc6a1327-b7d6-4830-a6a4-a782b094b2c8}*SharedItemsImports = 13
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
