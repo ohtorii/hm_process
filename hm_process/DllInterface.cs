@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 
 namespace hm_process
 {
-    public class dll_interface
+    public class DllInterface
     {
 
 		[DllExport]
@@ -38,6 +38,18 @@ namespace hm_process
 							Marshal.PtrToStringAuto(arguments), 
 							redirect_stndard_output.ToInt32()==0?false:true,
 							redirect_standard_error.ToInt32()==0?false:true));
+		}
+
+		[DllExport]
+		public static IntPtr SpawnWithRedirectEx(IntPtr filename, IntPtr arguments, IntPtr redirect_stndard_output, IntPtr redirect_standard_error, IntPtr redirect_standard_input)
+		{
+			return new IntPtr(
+						ProcessHolder.SpawnWithRedirect(
+							Marshal.PtrToStringAuto(filename),
+							Marshal.PtrToStringAuto(arguments),
+							redirect_stndard_output.ToInt32() == 0 ? false : true,
+							redirect_standard_error.ToInt32() == 0 ? false : true,
+							redirect_standard_input.ToInt32() == 0 ? false : true));
 		}
 
 		[DllExport]
