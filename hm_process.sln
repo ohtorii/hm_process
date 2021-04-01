@@ -7,8 +7,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "hm_process", "hm_process\hm
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "hm_process_shared", "hm_process_shared\hm_process_shared.shproj", "{CC6A1327-B7D6-4830-A6A4-A782B094B2C8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "test", "test\test.csproj", "{62B2AEFF-534D-478D-A03E-13DF687D2AD0}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		hm_process_shared\hm_process_shared.projitems*{62b2aeff-534d-478d-a03e-13df687d2ad0}*SharedItemsImports = 4
 		hm_process_shared\hm_process_shared.projitems*{748ca0ce-31a9-42b0-8420-1862df231e3b}*SharedItemsImports = 4
 		hm_process_shared\hm_process_shared.projitems*{cc6a1327-b7d6-4830-a6a4-a782b094b2c8}*SharedItemsImports = 13
 	EndGlobalSection
@@ -21,6 +24,10 @@ Global
 		{748CA0CE-31A9-42B0-8420-1862DF231E3B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{748CA0CE-31A9-42B0-8420-1862DF231E3B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{748CA0CE-31A9-42B0-8420-1862DF231E3B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{62B2AEFF-534D-478D-A03E-13DF687D2AD0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{62B2AEFF-534D-478D-A03E-13DF687D2AD0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{62B2AEFF-534D-478D-A03E-13DF687D2AD0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{62B2AEFF-534D-478D-A03E-13DF687D2AD0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

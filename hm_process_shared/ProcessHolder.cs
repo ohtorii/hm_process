@@ -206,6 +206,19 @@ namespace hm_process
 			return false;
 		}
 
+		public static string ReadStandardOutputAsString(int handle)
+		{
+			try
+			{
+				return _process[handle]._stdout.ReadAsString();
+			}
+			catch (Exception)
+			{
+				//pass
+			}
+			return "";
+		}
+
 		public static IntPtr ReadStandardOutput(int handle)
 		{
 			try
@@ -217,6 +230,19 @@ namespace hm_process
 				//pass
 			}
 			return new IntPtr();
+		}
+
+		public static string ReadStandardErrorAsString(int handle)
+		{
+			try
+			{
+				return _process[handle]._stderr.ReadAsString();
+			}
+			catch (Exception)
+			{
+				//pass
+			}
+			return "";
 		}
 
 		public static IntPtr ReadStandardError(int handle)
@@ -232,16 +258,30 @@ namespace hm_process
 			return new IntPtr();
 		}
 
-		public static IntPtr ReadStandardOutputAll()
+		public static string ReadStandardOutputAllAsString()
 		{
 			try
 			{
-				FreeStaticStdoutString();
 				string all = "";
 				foreach (var item in _process)
 				{
 					all += item.Value._stdout.ReadAsString();
 				}
+				return all;
+			}
+			catch (Exception)
+			{
+				//pass
+			}
+			return "";
+		}
+
+		public static IntPtr ReadStandardOutputAll()
+		{
+			try
+			{
+				FreeStaticStdoutString();
+				var all = ReadStandardOutputAllAsString();
 				_static_stdout_string = Marshal.StringToHGlobalUni(all);
 				return _static_stdout_string;
 			}
@@ -252,16 +292,30 @@ namespace hm_process
 			return new IntPtr();
 		}
 
-		public static IntPtr ReadStandardErrorAll()
+		public static string ReadStandardErrorAllAsString()
 		{
 			try
 			{
-				FreeStaticStderrString();
 				string all = "";
 				foreach (var item in _process)
 				{
 					all += item.Value._stderr.ReadAsString();
 				}
+				return all;
+			}
+			catch (Exception)
+			{
+				//pass
+			}
+			return "";
+		}
+
+		public static IntPtr ReadStandardErrorAll()
+		{
+			try
+			{
+				FreeStaticStderrString();
+				var all = ReadStandardErrorAllAsString();
 				_static_stderr_string = Marshal.StringToHGlobalUni(all);
 				return _static_stderr_string;
 			}
