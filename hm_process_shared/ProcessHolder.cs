@@ -169,7 +169,7 @@ namespace hm_process
 		{
 			try
 			{
-				return _holder[handle]._stdout.ReadAsString();
+				return _holder[handle].ReadStandardOutputAsString();
 			}
 			catch (Exception)
 			{
@@ -182,7 +182,7 @@ namespace hm_process
 		{
 			try
 			{
-				return _holder[handle]._stdout.ReadAsIntPtr();
+				return _holder[handle].ReadStandardOutput();
 			}
 			catch (Exception)
 			{
@@ -195,7 +195,7 @@ namespace hm_process
 		{
 			try
 			{
-				return _holder[handle]._stderr.ReadAsString();
+				return _holder[handle].ReadStandardErrorAsString();
 			}
 			catch (Exception)
 			{
@@ -208,7 +208,7 @@ namespace hm_process
 		{
 			try
 			{
-				return _holder[handle]._stderr.ReadAsIntPtr();
+				return _holder[handle].ReadStandardError();
 			}
 			catch (Exception)
 			{
@@ -224,7 +224,7 @@ namespace hm_process
 				string all = "";
 				foreach (var item in _holder)
 				{
-					all += item.Value._stdout.ReadAsString();
+					all += item.Value.ReadStandardErrorAsString();
 				}
 				return all;
 			}
@@ -258,7 +258,7 @@ namespace hm_process
 				string all = "";
 				foreach (var item in _holder)
 				{
-					all += item.Value._stderr.ReadAsString();
+					all += item.Value.ReadStandardErrorAsString();
 				}
 				return all;
 			}

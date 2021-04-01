@@ -43,6 +43,10 @@ namespace hm_process
 			{
 				newProcess._process.ErrorDataReceived += newProcess._stderr.Received;
 			}
+			if (redirect_standard_input)
+			{
+				//newProcess._process.StandardInput
+			}
 			return newProcess;
 		}
 
@@ -83,6 +87,18 @@ namespace hm_process
 		{
 			_cancellationTokenSource.Cancel();
 		}
+		public string ReadStandardOutputAsString(){
+            return _stdout.ReadAsString();
+        }
+        public IntPtr ReadStandardOutput(){
+            return _stdout.ReadAsIntPtr();
+        }
+        public string ReadStandardErrorAsString(){
+            return _stderr.ReadAsString();
+        }
+        public IntPtr ReadStandardError(){
+            return _stderr.ReadAsIntPtr();
+        }
 		public bool Destroy()
 		{
 			try
@@ -137,8 +153,8 @@ namespace hm_process
 		}
 		
 		Process  _process = new Process();
-		public Redirect _stdout = new Redirect();
-		public Redirect _stderr = new Redirect();
+		Redirect _stdout = new Redirect();
+		Redirect _stderr = new Redirect();
 
 		CancellationTokenSource _cancellationTokenSource =new CancellationTokenSource();
 		//public bool _auto_destroy=false;///プロセス終了時に自動削除するかどうか。
