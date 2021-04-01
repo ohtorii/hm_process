@@ -11,7 +11,7 @@ using System.Runtime.InteropServices;
 
 namespace hm_process
 {
-	class ProcessHolder
+	public class ProcessHolder
 	{
 		public static readonly int INVALID_HANDLE = 0;
 		public static readonly int FIRST_HANDLE = 1;
@@ -45,15 +45,15 @@ namespace hm_process
 
 		public static void Destroy()
 		{
-			if (_process != null)
+			if (_holder != null)
 			{
-				lock (_process)
+				lock (_holder)
 				{
-					foreach (var item in _process)
+					foreach (var item in _holder)
 					{
 						item.Value.Destroy();
 					}
-					_process.Clear();
+					_holder.Clear();
 				}
 			}
 
@@ -65,20 +65,15 @@ namespace hm_process
 
 		public static int Spawn(string filename, string arguments)
 		{
-			if (_process == null)
+			if (_holder == null)
 			{
 				return INVALID_HANDLE;
 			}
 			try
 			{
-				var item = new ProcessInstance();
-				var start = item._process.StartInfo;
-
-				start.FileName = filename;
-				start.Arguments = arguments;
-
+				var newProcess=ProcessInstance.Spawn(filename, arguments);
 				var current_handle = _next_handle;
-				_process[current_handle] = item;
+				_holder[current_handle] = newProcess;
 				++_next_handle;
 				return current_handle;
 			}
@@ -95,36 +90,15 @@ namespace hm_process
 		}
 		public static int SpawnWithRedirect(string filename, string arguments, bool redirect_stndard_output, bool redirect_standard_error, bool redirect_standard_input)
 		{
-			if (_process == null)
+			if (_holder == null)
 			{
 				return INVALID_HANDLE;
 			}
-
 			try
 			{
-				var item = new ProcessInstance();
-				var start = item._process.StartInfo;
-
-				start.FileName = filename;
-				start.Arguments = arguments;
-
-				start.RedirectStandardOutput = redirect_stndard_output;
-				start.RedirectStandardError = redirect_standard_error;
-				start.RedirectStandardInput = redirect_standard_input;
-				item._process.Exited += item.ExitedHandler;
-
-				start.UseShellExecute = false;
-				if (redirect_stndard_output)
-				{
-					item._process.OutputDataReceived += item._stdout.Received;
-				}
-				if (redirect_standard_error)
-				{
-					item._process.ErrorDataReceived += item._stderr.Received;
-				}
+				var newProcess = ProcessInstance.SpawnWithRedirect(filename, arguments, redirect_stndard_output, redirect_standard_error, redirect_standard_input);
 				var current_handle = _next_handle;
-				_process[current_handle] = item;
-
+				_holder[current_handle] = newProcess;
 				++_next_handle;
 				return current_handle;
 			}
@@ -139,7 +113,7 @@ namespace hm_process
 		{
 			try
 			{
-				_process[handle]._process.StartInfo.Arguments = argments;
+				_holder[handle].SetArguments(argments);
 				return true;
 			}
 			catch (Exception)
@@ -153,7 +127,7 @@ namespace hm_process
 		{
 			try
 			{
-				_process[handle]._process.StartInfo.CreateNoWindow = value;
+				_holder[handle].SetCreateNoWindow(value);
 				return true;
 			}
 			catch (Exception)
@@ -167,7 +141,7 @@ namespace hm_process
 		{
 			try
 			{
-				_process[handle]._process.StartInfo.WorkingDirectory = value;
+				_holder[handle].SetWorkingDirectory(value);
 				return true;
 			}
 			catch (Exception)
@@ -181,22 +155,7 @@ namespace hm_process
 		{
 			try
 			{
-				/*if(_inspector==null){
-					_inspector = Task.Run(() => InspectAsync(_inspector_token.Token));
-				}
-				*/
-
-				var item = _process[handle];
-				item._process.Start();
-
-				if (item._process.StartInfo.RedirectStandardOutput)
-				{
-					item._process.BeginOutputReadLine();
-				}
-				if (item._process.StartInfo.RedirectStandardError)
-				{
-					item._process.BeginErrorReadLine();
-				}
+				_holder[handle].Start();
 				return true;
 			}
 			catch (Exception)
@@ -210,7 +169,7 @@ namespace hm_process
 		{
 			try
 			{
-				return _process[handle]._stdout.ReadAsString();
+				return _holder[handle]._stdout.ReadAsString();
 			}
 			catch (Exception)
 			{
@@ -223,7 +182,7 @@ namespace hm_process
 		{
 			try
 			{
-				return _process[handle]._stdout.ReadAsIntPtr();
+				return _holder[handle]._stdout.ReadAsIntPtr();
 			}
 			catch (Exception)
 			{
@@ -236,7 +195,7 @@ namespace hm_process
 		{
 			try
 			{
-				return _process[handle]._stderr.ReadAsString();
+				return _holder[handle]._stderr.ReadAsString();
 			}
 			catch (Exception)
 			{
@@ -249,7 +208,7 @@ namespace hm_process
 		{
 			try
 			{
-				return _process[handle]._stderr.ReadAsIntPtr();
+				return _holder[handle]._stderr.ReadAsIntPtr();
 			}
 			catch (Exception)
 			{
@@ -263,7 +222,7 @@ namespace hm_process
 			try
 			{
 				string all = "";
-				foreach (var item in _process)
+				foreach (var item in _holder)
 				{
 					all += item.Value._stdout.ReadAsString();
 				}
@@ -297,7 +256,7 @@ namespace hm_process
 			try
 			{
 				string all = "";
-				foreach (var item in _process)
+				foreach (var item in _holder)
 				{
 					all += item.Value._stderr.ReadAsString();
 				}
@@ -330,7 +289,7 @@ namespace hm_process
 		{
 			try
 			{
-				_process[handle]._process.WaitForExit();
+				_holder[handle].WaitForExit();
 				return true;
 			}
 			catch (Exception)
@@ -344,7 +303,7 @@ namespace hm_process
 		{
 			try
 			{
-				return _process[handle]._process.WaitForExit(timeout);
+				return _holder[handle].WaitForExit(timeout);
 			}
 			catch (Exception)
 			{
@@ -357,7 +316,7 @@ namespace hm_process
 		{
 			try
 			{
-				return _process[handle]._process.HasExited;
+				return _holder[handle].HasExited();
 			}
 			catch (Exception)
 			{
@@ -370,7 +329,7 @@ namespace hm_process
 		{
 			try
 			{
-				return _process[handle]._process.ExitCode;
+				return _holder[handle].ExitCode();
 			}
 			catch (Exception)
 			{
@@ -383,14 +342,14 @@ namespace hm_process
 		{
 			try
 			{
-				ProcessInstance p;
+				ProcessInstance process;
 
-				lock (_process)
+				lock (_holder)
 				{
-					p = _process[handle];
-					_process.Remove(handle);
+					process = _holder[handle];
+					_holder.Remove(handle);
 				}
-				return p.Destroy();
+				return process.Destroy();
 			}
 			catch (Exception)
 			{
@@ -399,44 +358,7 @@ namespace hm_process
 			return false;
 		}
 
-		/*
-		static void InspectAsync(CancellationToken cancelToken)
-		{
-			var remove_handles = new List<int>();
-
-			while (! cancelToken.IsCancellationRequested){
-				lock (_process)
-				{
-					foreach (var item in _process)
-					{
-						if (!item.Value._auto_destroy)
-						{
-							continue;
-						}
-						if (! item.Value._process.HasExited)
-						{
-							continue;
-						}
-						remove_handles.Add(item.Key);
-					}
-				}
-
-				foreach(var handle in remove_handles)
-				{
-					Destroy(handle);
-				}
-				remove_handles.Clear();
-
-				Thread.Sleep(5000);
-
-			}
-		}
-		*/
-
 		static int _next_handle = FIRST_HANDLE;
-		static Dictionary<int, ProcessInstance> _process = new Dictionary<int, ProcessInstance>();
-
-		//static Task	_inspector=null;
-		//static CancellationTokenSource _inspector_token=new CancellationTokenSource();
+		static Dictionary<int, ProcessInstance> _holder = new Dictionary<int, ProcessInstance>();
 	}
 }

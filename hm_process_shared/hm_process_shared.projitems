@@ -11,6 +11,7 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)ProcessHolder.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ProcessInstance.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Redirect.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RedirectStdin.cs" />
   </ItemGroup>
 </Project>

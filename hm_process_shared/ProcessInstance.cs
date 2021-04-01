@@ -12,70 +12,73 @@ namespace hm_process
 {
 	class ProcessInstance
 	{
-		public class Redirect
+		public static ProcessInstance Spawn(string filename, string arguments)
 		{
-			//
-			//(memo)
-			//秀丸エディタへ返す文字列の長さ
-			//
-			//秀丸エディタの文字列変数は最大で4MBの領域を利用できます。
-			//そのため、返す文字列の最大長に制限を設けています。
-			//
-			const int _max_read_line = 100;
+			var newProcess = new ProcessInstance();
+			var start = newProcess._process.StartInfo;
 
-			public List<string> _lines = new List<string>();
-			IntPtr _ptr = IntPtr.Zero;
+			start.FileName = filename;
+			start.Arguments = arguments;
+			return newProcess;
+		}
+		public static ProcessInstance SpawnWithRedirect(string filename, string arguments, bool redirect_stndard_output, bool redirect_standard_error, bool redirect_standard_input)
+		{
+			var newProcess = new ProcessInstance();
+			var start = newProcess._process.StartInfo;
 
-			~Redirect()
+			start.FileName = filename;
+			start.Arguments = arguments;
+
+			start.RedirectStandardOutput = redirect_stndard_output;
+			start.RedirectStandardError = redirect_standard_error;
+			start.RedirectStandardInput = redirect_standard_input;
+			newProcess._process.Exited += newProcess.ExitedHandler;
+
+			start.UseShellExecute = false;
+			if (redirect_stndard_output)
 			{
-				if (_ptr != IntPtr.Zero)
-				{
-					Marshal.FreeHGlobal(_ptr);
-					_ptr = IntPtr.Zero;
-				}
-				_lines = null;
+				newProcess._process.OutputDataReceived += newProcess._stdout.Received;
 			}
-
-			public string ReadAsString()
+			if (redirect_standard_error)
 			{
-				string result;
-
-				lock (_lines)
-				{
-					result = string.Join("\n", _lines);
-					_lines.Clear();
-				}
-				return result;
+				newProcess._process.ErrorDataReceived += newProcess._stderr.Received;
 			}
+			return newProcess;
+		}
 
-			public IntPtr ReadAsIntPtr()
+		public void SetArguments(string argments)
+		{
+			_process.StartInfo.Arguments = argments;
+		}
+		public void SetCreateNoWindow(bool value){
+    		_process.StartInfo.CreateNoWindow = value;
+		}
+		public void SetWorkingDirectory(string value){
+    		_process.StartInfo.WorkingDirectory = value;
+		}
+		public void Start(){
+    		_process.Start();
+			if (_process.StartInfo.RedirectStandardOutput)
 			{
-				//前回の文字列を解放する
-				Marshal.FreeHGlobal(_ptr);
-				_ptr = IntPtr.Zero;
-				//今回の文字列を確保する
-				_ptr = Marshal.StringToHGlobalUni(ReadAsString());
-				return _ptr;
+				_process.BeginOutputReadLine();
 			}
-
-			public void Received(object sender, DataReceivedEventArgs e)
+			if (_process.StartInfo.RedirectStandardError)
 			{
-				if (e.Data == null)
-				{
-					return;
-				}
-
-				while (_max_read_line < _lines.Count)
-				{
-					Thread.Sleep(10);
-				}
-
-				lock (_lines)
-				{
-					_lines.Add(e.Data);
-				}
+				_process.BeginErrorReadLine();
 			}
 		}
+        public void WaitForExit(){
+            _process.WaitForExit();
+        }
+        public bool WaitForExit(int timeout){
+            return _process.WaitForExit(timeout);
+        }
+        public bool HasExited(){
+            return _process.HasExited;
+        }
+        public int ExitCode(){
+            return _process.ExitCode;
+        }
 		public void ExitedHandler(object sender, EventArgs e)
 		{
 			_cancellationTokenSource.Cancel();
@@ -133,7 +136,7 @@ namespace hm_process
 			return false;
 		}
 		
-		public Process _process = new Process();
+		Process  _process = new Process();
 		public Redirect _stdout = new Redirect();
 		public Redirect _stderr = new Redirect();
 
