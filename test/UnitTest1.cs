@@ -68,17 +68,24 @@ namespace test
 			ProcessHolder.SetCreateNoWindow(handle, true);
 			ProcessHolder.Start(handle);
 
+			//ソート対象の文字列
 		    ProcessHolder.WriteLineStandardInputAsString(handle, "xyz");
             ProcessHolder.WriteLineStandardInputAsString(handle,"abc");
             ProcessHolder.WriteLineStandardInputAsString(handle,"3");
+			
+			//Ctl-c 相当
 			ProcessHolder.CloseStandardInput(handle);
 
 			ProcessHolder.WaitForExit(handle);
 
-			var text = ProcessHolder.ReadStandardOutputAllAsString();
-			System.Diagnostics.Debug.WriteLine(text);
-			text = ProcessHolder.ReadStandardErrorAllAsString();
-			System.Diagnostics.Debug.WriteLine(text);
+			{
+				var textOutput = ProcessHolder.ReadStandardOutputAllAsString();
+				Assert.AreEqual("3\nabc\nxyz", textOutput);
+			}
+			{
+				var textError = ProcessHolder.ReadStandardErrorAllAsString();
+				Assert.AreEqual("", textError);
+			}
 
 			ProcessHolder.Destroy(handle);
 		}
