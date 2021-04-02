@@ -2,3 +2,6 @@
 hm_process/bin/
 hm_process/obj/
 packages/DllExport.1.6.3/
+*.cache
+test/obj/test.csproj.nuget.dgspec.json
+test/obj/test.csproj.nuget.g.props
