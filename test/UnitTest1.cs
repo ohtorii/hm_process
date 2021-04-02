@@ -12,14 +12,10 @@ namespace test
 			var has_output = false;
 			{
 				var handle = ProcessHolder.SpawnWithRedirect("cmd.exe", "/c dir c:\\", true, true);
-				Assert.AreNotSame(ProcessHolder.INVALID_HANDLE, handle);
+				Assert.AreNotEqual(ProcessHolder.INVALID_HANDLE, handle);
 
-				bool success = ProcessHolder.SetCreateNoWindow(handle, true);
-				Assert.AreEqual(true, success);
-
-				success = ProcessHolder.Start(handle);
-				Assert.AreEqual(true, success);
-
+				ProcessHolder.SetCreateNoWindow(handle, true);
+				ProcessHolder.Start(handle);
 				var exit = false;
 				while (exit == false)
 				{
@@ -56,12 +52,50 @@ namespace test
 				//
 				//終了処理
 				//
-				success = ProcessHolder.Destroy(handle);
-				Assert.AreEqual(true, success);
+				ProcessHolder.Destroy(handle);
 			}
 
 			//出力があるはず
 			Assert.AreEqual(true, has_output);
+		}
+
+		[TestMethod]
+		public void StandardInput()
+		{
+			var handle = ProcessHolder.SpawnWithRedirect("sort.exe", "", true, true, true);
+			Assert.AreNotEqual(ProcessHolder.INVALID_HANDLE, handle);
+
+			ProcessHolder.SetCreateNoWindow(handle, true);
+			ProcessHolder.Start(handle);
+
+		    ProcessHolder.WriteLineStandardInputAsString(handle, "xyz");
+            ProcessHolder.WriteLineStandardInputAsString(handle,"abc");
+            ProcessHolder.WriteLineStandardInputAsString(handle,"3");
+			ProcessHolder.CloseStandardInput(handle);
+
+			ProcessHolder.WaitForExit(handle);
+
+			var text = ProcessHolder.ReadStandardOutputAllAsString();
+			System.Diagnostics.Debug.WriteLine(text);
+			text = ProcessHolder.ReadStandardErrorAllAsString();
+			System.Diagnostics.Debug.WriteLine(text);
+
+			ProcessHolder.Destroy(handle);
+		}
+
+		[TestMethod]
+		public void ProcessKill()
+		{
+			var handle = ProcessHolder.SpawnWithRedirect("notepad.exe", "", false, false);
+			Assert.AreNotEqual(ProcessHolder.INVALID_HANDLE, handle);
+
+		    ProcessHolder.Start(handle);
+			
+			//少し待ってからプロセスをキルする
+			System.Threading.Thread.Sleep(1000);
+
+			ProcessHolder.Kill(handle);
+			ProcessHolder.Destroy(handle);
 		}
 	}
 }

@@ -12,144 +12,214 @@ namespace hm_process
 {
     public class DllInterface
     {
-
+        const int FALSE=1;
+        const int TRUE=1;
+        
 		[DllExport]
 		public static IntPtr Finish()
 		{
 			ProcessHolder.Destroy();
-			return new IntPtr(1);
+			return new IntPtr(TRUE);
 		}
 
 		[DllExport]
         public static IntPtr Spawn(IntPtr filename, IntPtr arguments)
         {
-			return new IntPtr(
-						ProcessHolder.Spawn(
-							Marshal.PtrToStringAuto(filename), 
-							Marshal.PtrToStringAuto(arguments)));
+			try
+			{
+				return new IntPtr(
+							ProcessHolder.Spawn(
+								Marshal.PtrToStringAuto(filename),
+								Marshal.PtrToStringAuto(arguments)));
+			}
+			catch (Exception)
+			{
+				//pass
+			}
+			return new IntPtr(ProcessHolder.INVALID_HANDLE);
 		}
 
 		[DllExport]
 		public static IntPtr SpawnWithRedirect(IntPtr filename, IntPtr arguments, IntPtr redirect_stndard_output, IntPtr redirect_standard_error)
 		{
-			return new IntPtr(
-						ProcessHolder.SpawnWithRedirect(
-							Marshal.PtrToStringAuto(filename), 
-							Marshal.PtrToStringAuto(arguments), 
-							redirect_stndard_output.ToInt32()==0?false:true,
-							redirect_standard_error.ToInt32()==0?false:true));
+            try{
+    			return new IntPtr(
+    						ProcessHolder.SpawnWithRedirect(
+    							Marshal.PtrToStringAuto(filename), 
+    							Marshal.PtrToStringAuto(arguments), 
+    							redirect_stndard_output.ToInt32()==0?false:true,
+    							redirect_standard_error.ToInt32()==0?false:true));
+            }catch (Exception){
+                //pass
+            }
+            return new IntPtr(ProcessHolder.INVALID_HANDLE);
 		}
 
 		[DllExport]
 		public static IntPtr SpawnWithRedirectEx(IntPtr filename, IntPtr arguments, IntPtr redirect_stndard_output, IntPtr redirect_standard_error, IntPtr redirect_standard_input)
 		{
-			return new IntPtr(
-						ProcessHolder.SpawnWithRedirect(
-							Marshal.PtrToStringAuto(filename),
-							Marshal.PtrToStringAuto(arguments),
-							redirect_stndard_output.ToInt32() == 0 ? false : true,
-							redirect_standard_error.ToInt32() == 0 ? false : true,
-							redirect_standard_input.ToInt32() == 0 ? false : true));
+            try{
+    			return new IntPtr(
+    						ProcessHolder.SpawnWithRedirect(
+    							Marshal.PtrToStringAuto(filename),
+    							Marshal.PtrToStringAuto(arguments),
+    							redirect_stndard_output.ToInt32() == 0 ? false : true,
+    							redirect_standard_error.ToInt32() == 0 ? false : true,
+    							redirect_standard_input.ToInt32() == 0 ? false : true));
+            }catch (Exception){
+                //pass
+            }
+            return new IntPtr(ProcessHolder.INVALID_HANDLE);
 		}
 
 		[DllExport]
 		public static IntPtr SetArguments(IntPtr handle, IntPtr arguments)
 		{
-			var success = ProcessHolder.SetArguments(handle.ToInt32(),Marshal.PtrToStringAuto(arguments));
-			return new IntPtr(success?1:0);
+            try{
+    			ProcessHolder.SetArguments(handle.ToInt32(),Marshal.PtrToStringAuto(arguments));
+    			return new IntPtr(TRUE);
+			}catch (Exception){
+               	//pass
+            }
+			return new IntPtr(FALSE);
 		}
 
 		[DllExport]
 		public static IntPtr SetCreateNoWindow(IntPtr handle, IntPtr value)
 		{
-			var success = ProcessHolder.SetCreateNoWindow(handle.ToInt32(), value.ToInt32()==0?false:true);
-			return new IntPtr(success ? 1 : 0);
+            try{
+    			ProcessHolder.SetCreateNoWindow(handle.ToInt32(), value.ToInt32()==0?false:true);
+    			return new IntPtr(TRUE);
+			}catch (Exception){
+               	//pass
+            }
+			return new IntPtr(FALSE);
 		}
 
 		[DllExport]
 		public static IntPtr SetWorkingDirectory(IntPtr handle, IntPtr value)
 		{
-			var success = ProcessHolder.SetWorkingDirectory(handle.ToInt32(), Marshal.PtrToStringAuto(value));
-			return new IntPtr(success ? 1 : 0);
+            try{
+			    ProcessHolder.SetWorkingDirectory(handle.ToInt32(), Marshal.PtrToStringAuto(value));
+			    return new IntPtr(TRUE);
+			}catch (Exception){
+               	//pass
+            }
+			return new IntPtr(FALSE);
 		}
 
 		[DllExport]
 		public static IntPtr Start(IntPtr handle)
 		{
-			if (ProcessHolder.Start(handle.ToInt32()))
-			{
-				return new IntPtr(1);	//true
-			}
-			return new IntPtr(0);		//false
+            try{
+			    ProcessHolder.Start(handle.ToInt32());
+			    return new IntPtr(TRUE); 
+			}catch (Exception){
+               	//pass
+            }			
+			return new IntPtr(FALSE);
 		}
 
 		[DllExport]
 		public static IntPtr ReadStandardOutput(IntPtr handle)
 		{
-			return ProcessHolder.ReadStandardOutput(handle.ToInt32());
+            try{
+			    return ProcessHolder.ReadStandardOutput(handle.ToInt32());
+			}catch (Exception){
+               	//pass
+            }
+            return new IntPtr(0);
 		}
 
 		[DllExport]
 		public static IntPtr ReadStandardError(IntPtr handle)
 		{
-			return ProcessHolder.ReadStandardError(handle.ToInt32());
+            try{
+			    return ProcessHolder.ReadStandardError(handle.ToInt32());
+			}catch (Exception){
+                //pass
+            }
+            return new IntPtr(0);
 		}
 
 		[DllExport]
 		public static IntPtr ReadStandardOutputAll()
 		{
-			return ProcessHolder.ReadStandardOutputAll();
+            try{
+    			return ProcessHolder.ReadStandardOutputAll();
+			}catch (Exception){
+                //pass
+            }
+            return new IntPtr(0);
 		}
 
 		[DllExport]
 		public static IntPtr ReadStandardErrorAll()
 		{
-			return ProcessHolder.ReadStandardErrorAll();
+            try{
+			    return ProcessHolder.ReadStandardErrorAll();
+			}catch (Exception){
+                //pass
+            }
+            return new IntPtr(0);
 		}
 
 		[DllExport]
 		public static IntPtr WaitForExit(IntPtr handle)
 		{
-			if (ProcessHolder.WaitForExit(handle.ToInt32()))
-			{
-				return new IntPtr(1);   //true
-			}
-			return new IntPtr(0);   //false
+            try{
+    			ProcessHolder.WaitForExit(handle.ToInt32());
+    			return new IntPtr(TRUE);
+			}catch (Exception){
+                //pass
+            }
+			return new IntPtr(FALSE);
 		}
 
 		[DllExport]
 		public static IntPtr WaitForExitWithTimeOut(IntPtr handle,IntPtr timeout_msec)
 		{
-			if (ProcessHolder.WaitForExit(handle.ToInt32(),timeout_msec.ToInt32()))
-			{
-				return new IntPtr(1);   //true
-			}
-			return new IntPtr(0);   //false
+            try{
+    			ProcessHolder.WaitForExit(handle.ToInt32(),timeout_msec.ToInt32());
+    			return new IntPtr(TRUE);
+			}catch (Exception){
+                //pass
+            }
+			return new IntPtr(FALSE);
 		}
 
 		[DllExport]
 		public static IntPtr HasExited(IntPtr handle)
 		{
-			if (ProcessHolder.HasExited(handle.ToInt32()))
-			{
-				return new IntPtr(1);   //true
-			}
-			return new IntPtr(0);   //false
+            try{
+    			ProcessHolder.HasExited(handle.ToInt32());
+    			return new IntPtr(TRUE);
+			}catch (Exception){
+                //pass
+            }
+			return new IntPtr(FALSE); 
 		}
 		[DllExport]
 		public static IntPtr ExitCode(IntPtr handle)
 		{
-			return new IntPtr(ProcessHolder.ExitCode(handle.ToInt32()));
+            try{
+    			return new IntPtr(ProcessHolder.ExitCode(handle.ToInt32()));
+			}catch (Exception){
+                //pass
+            }
+            return new IntPtr(0);
 		}
 
 		[DllExport]
 		public static IntPtr Destroy(IntPtr handle)
 		{
-			if (ProcessHolder.Destroy(handle.ToInt32()))
-			{
-				return new IntPtr(1);   //true
-			}
-			return new IntPtr(0);   //false
+            try{
+    			ProcessHolder.Destroy(handle.ToInt32());
+    			return new IntPtr(TRUE);
+			}catch (Exception){
+                //pass
+            }
+			return new IntPtr(FALSE);  
 		}
 		
 

@@ -43,10 +43,6 @@ namespace hm_process
 			{
 				newProcess._process.ErrorDataReceived += newProcess._stderr.Received;
 			}
-			if (redirect_standard_input)
-			{
-				//newProcess._process.StandardInput
-			}
 			return newProcess;
 		}
 
@@ -70,6 +66,16 @@ namespace hm_process
 			{
 				_process.BeginErrorReadLine();
 			}
+			if (_process.StartInfo.RedirectStandardInput)
+			{
+                System.Diagnostics.Debug.Assert(_stdin==null);
+                _stdin = new RedirectStdin(_process.StandardInput, _cancellationTokenSource.Token);
+				_stdin.Start();
+			}
+		}
+		public void Kill()
+		{
+			_process.Kill();
 		}
         public void WaitForExit(){
             _process.WaitForExit();
@@ -99,15 +105,30 @@ namespace hm_process
         public IntPtr ReadStandardError(){
             return _stderr.ReadAsIntPtr();
         }
-		public bool Destroy()
+		public void WriteLineStandardInputAsString(string line)
+		{
+			_process.StandardInput.WriteLine(line);
+		}
+		public void CloseStandardInput()
+		{
+			_stdin.Stop();
+		}
+		public void Destroy()
 		{
 			try
 			{
 				var p = _process;
 
+				if (p.StartInfo.RedirectStandardInput)
+				{
+					p.StandardInput.Close();
+				}
+
 				_process = null;
 				_stderr = null;
 				_stdout = null;
+				_stdin = null;
+				_cancellationTokenSource.Cancel();
 
 				try
 				{
@@ -121,7 +142,6 @@ namespace hm_process
 				if (p.HasExited)
 				{
 					p.Close();
-					return true;
 				}
 
 				try
@@ -143,19 +163,17 @@ namespace hm_process
 				{
 					//pass
 				}
-				return true;
 			}
 			catch (Exception)
 			{
 				//pass
 			}
-			return false;
 		}
 		
 		Process  _process = new Process();
 		Redirect _stdout = new Redirect();
 		Redirect _stderr = new Redirect();
-
+		RedirectStdin _stdin = null;
 		CancellationTokenSource _cancellationTokenSource =new CancellationTokenSource();
 		//public bool _auto_destroy=false;///プロセス終了時に自動削除するかどうか。
 	}

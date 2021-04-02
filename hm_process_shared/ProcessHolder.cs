@@ -69,19 +69,12 @@ namespace hm_process
 			{
 				return INVALID_HANDLE;
 			}
-			try
-			{
-				var newProcess=ProcessInstance.Spawn(filename, arguments);
-				var current_handle = _next_handle;
-				_holder[current_handle] = newProcess;
-				++_next_handle;
-				return current_handle;
-			}
-			catch (Exception)
-			{
-				//pass
-			}
-			return INVALID_HANDLE;
+			
+			var newProcess=ProcessInstance.Spawn(filename, arguments);
+			var current_handle = _next_handle;
+			_holder[current_handle] = newProcess;
+			++_next_handle;
+			return current_handle;
 		}
 
 		public static int SpawnWithRedirect(string filename, string arguments, bool redirect_stndard_output, bool redirect_standard_error)
@@ -94,75 +87,31 @@ namespace hm_process
 			{
 				return INVALID_HANDLE;
 			}
-			try
-			{
-				var newProcess = ProcessInstance.SpawnWithRedirect(filename, arguments, redirect_stndard_output, redirect_standard_error, redirect_standard_input);
-				var current_handle = _next_handle;
-				_holder[current_handle] = newProcess;
-				++_next_handle;
-				return current_handle;
-			}
-			catch (Exception)
-			{
-				//pass
-			}
-			return INVALID_HANDLE;
+			var newProcess = ProcessInstance.SpawnWithRedirect(filename, arguments, redirect_stndard_output, redirect_standard_error, redirect_standard_input);
+			var current_handle = _next_handle;
+			_holder[current_handle] = newProcess;
+			++_next_handle;
+			return current_handle;
 		}
 
-		public static bool SetArguments(int handle, string argments)
+		public static void SetArguments(int handle, string argments)
 		{
-			try
-			{
-				_holder[handle].SetArguments(argments);
-				return true;
-			}
-			catch (Exception)
-			{
-				//pass
-			}
-			return false;
+		    _holder[handle].SetArguments(argments);
 		}
 
-		public static bool SetCreateNoWindow(int handle, bool value)
+		public static void SetCreateNoWindow(int handle, bool value)
 		{
-			try
-			{
-				_holder[handle].SetCreateNoWindow(value);
-				return true;
-			}
-			catch (Exception)
-			{
-				//pass
-			}
-			return false;
+			_holder[handle].SetCreateNoWindow(value);
 		}
 
-		public static bool SetWorkingDirectory(int handle, string value)
+		public static void SetWorkingDirectory(int handle, string value)
 		{
-			try
-			{
-				_holder[handle].SetWorkingDirectory(value);
-				return true;
-			}
-			catch (Exception)
-			{
-				//pass
-			}
-			return false;
+			_holder[handle].SetWorkingDirectory(value);
 		}
 
-		public static bool Start(int handle)
+		public static void Start(int handle)
 		{
-			try
-			{
-				_holder[handle].Start();
-				return true;
-			}
-			catch (Exception)
-			{
-				//pass
-			}
-			return false;
+			_holder[handle].Start();
 		}
 
 		public static string ReadStandardOutputAsString(int handle)
@@ -180,15 +129,7 @@ namespace hm_process
 
 		public static IntPtr ReadStandardOutput(int handle)
 		{
-			try
-			{
-				return _holder[handle].ReadStandardOutput();
-			}
-			catch (Exception)
-			{
-				//pass
-			}
-			return new IntPtr();
+			return _holder[handle].ReadStandardOutput();
 		}
 
 		public static string ReadStandardErrorAsString(int handle)
@@ -206,17 +147,16 @@ namespace hm_process
 
 		public static IntPtr ReadStandardError(int handle)
 		{
-			try
-			{
-				return _holder[handle].ReadStandardError();
-			}
-			catch (Exception)
-			{
-				//pass
-			}
-			return new IntPtr();
+			return _holder[handle].ReadStandardError();
 		}
-
+		public static void WriteLineStandardInputAsString(int handle, string line)
+		{
+			_holder[handle].WriteLineStandardInputAsString(line);
+		}
+		public static void CloseStandardInput(int handle)
+		{
+			_holder[handle].CloseStandardInput();
+		}
 		public static string ReadStandardOutputAllAsString()
 		{
 			try
@@ -224,7 +164,7 @@ namespace hm_process
 				string all = "";
 				foreach (var item in _holder)
 				{
-					all += item.Value.ReadStandardErrorAsString();
+					all += item.Value.ReadStandardOutputAsString();
 				}
 				return all;
 			}
@@ -237,18 +177,11 @@ namespace hm_process
 
 		public static IntPtr ReadStandardOutputAll()
 		{
-			try
-			{
-				FreeStaticStdoutString();
-				var all = ReadStandardOutputAllAsString();
-				_static_stdout_string = Marshal.StringToHGlobalUni(all);
-				return _static_stdout_string;
-			}
-			catch (Exception)
-			{
-				//pass
-			}
-			return new IntPtr();
+
+			FreeStaticStdoutString();
+			var all = ReadStandardOutputAllAsString();
+			_static_stdout_string = Marshal.StringToHGlobalUni(all);
+			return _static_stdout_string;
 		}
 
 		public static string ReadStandardErrorAllAsString()
@@ -271,91 +204,46 @@ namespace hm_process
 
 		public static IntPtr ReadStandardErrorAll()
 		{
-			try
-			{
-				FreeStaticStderrString();
-				var all = ReadStandardErrorAllAsString();
-				_static_stderr_string = Marshal.StringToHGlobalUni(all);
-				return _static_stderr_string;
-			}
-			catch (Exception)
-			{
-				//pass
-			}
-			return new IntPtr();
+			FreeStaticStderrString();
+			var all = ReadStandardErrorAllAsString();
+			_static_stderr_string = Marshal.StringToHGlobalUni(all);
+			return _static_stderr_string;
 		}
+		
 
-		public static bool WaitForExit(int handle)
+		public static void Kill(int handle)
 		{
-			try
-			{
-				_holder[handle].WaitForExit();
-				return true;
-			}
-			catch (Exception)
-			{
-				//pass
-			}
-			return false;
+			_holder[handle].Kill();
+		}
+		public static void WaitForExit(int handle)
+		{
+			_holder[handle].WaitForExit();
 		}
 
 		public static bool WaitForExit(int handle, int timeout)
 		{
-			try
-			{
-				return _holder[handle].WaitForExit(timeout);
-			}
-			catch (Exception)
-			{
-				//pass
-			}
-			return false;
+			return _holder[handle].WaitForExit(timeout);
 		}
 
 		public static bool HasExited(int handle)
 		{
-			try
-			{
-				return _holder[handle].HasExited();
-			}
-			catch (Exception)
-			{
-				//pass
-			}
-			return false;
+			return _holder[handle].HasExited();
 		}
 
 		public static int ExitCode(int handle)
 		{
-			try
-			{
-				return _holder[handle].ExitCode();
-			}
-			catch (Exception)
-			{
-				//pass
-			}
-			return 0;
+			return _holder[handle].ExitCode();
 		}
 
-		public static bool Destroy(int handle)
+		public static void Destroy(int handle)
 		{
-			try
+			ProcessInstance process;
+			lock (_holder)
 			{
-				ProcessInstance process;
-
-				lock (_holder)
-				{
-					process = _holder[handle];
-					_holder.Remove(handle);
-				}
-				return process.Destroy();
+				process = _holder[handle];
+				_holder.Remove(handle);
 			}
-			catch (Exception)
-			{
-				//pass
-			}
-			return false;
+			process.Destroy();
 		}
 
 		static int _next_handle = FIRST_HANDLE;
