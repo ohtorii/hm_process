@@ -105,9 +105,13 @@ namespace hm_process
         public IntPtr ReadStandardError(){
             return _stderr.ReadAsIntPtr();
         }
-		public void WriteLineStandardInputAsString(string line)
+		public void WriteLineStandardInput(string line)
 		{
 			_process.StandardInput.WriteLine(line);
+		}
+		public void WriteStandardInput(string str)
+		{
+			_process.StandardInput.Write(str);
 		}
 		public void CloseStandardInput()
 		{

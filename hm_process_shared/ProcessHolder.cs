@@ -149,10 +149,18 @@ namespace hm_process
 		{
 			return _holder[handle].ReadStandardError();
 		}
-		public static void WriteLineStandardInputAsString(int handle, string line)
+		public static void WriteLineStandardInput(int handle, string line)
 		{
-			_holder[handle].WriteLineStandardInputAsString(line);
+			_holder[handle].WriteLineStandardInput(line);
 		}
+		public static void WriteStandardInput(int handle, string str)
+		{
+			_holder[handle].WriteStandardInput(str);
+		}
+		/// <summary>
+		/// 標準入力を閉じる（Ctrl-Cに相当する）
+		/// </summary>
+		/// <param name="handle"></param>
 		public static void CloseStandardInput(int handle)
 		{
 			_holder[handle].CloseStandardInput();

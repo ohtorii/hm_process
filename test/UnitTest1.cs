@@ -69,9 +69,9 @@ namespace test
 			ProcessHolder.Start(handle);
 
 			//ソート対象の文字列
-		    ProcessHolder.WriteLineStandardInputAsString(handle, "xyz");
-            ProcessHolder.WriteLineStandardInputAsString(handle,"abc");
-            ProcessHolder.WriteLineStandardInputAsString(handle,"3");
+		    ProcessHolder.WriteLineStandardInput(handle, "xyz");
+            ProcessHolder.WriteLineStandardInput(handle,"abc");
+            ProcessHolder.WriteLineStandardInput(handle,"3");
 			
 			//Ctl-c 相当
 			ProcessHolder.CloseStandardInput(handle);

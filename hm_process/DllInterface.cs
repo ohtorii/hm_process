@@ -163,7 +163,48 @@ namespace hm_process
             }
             return new IntPtr(0);
 		}
-
+		[DllExport]
+		public static IntPtr WriteLineStandardInput(IntPtr handle, IntPtr line)
+		{
+			try
+			{
+				ProcessHolder.WriteLineStandardInput(handle.ToInt32(), Marshal.PtrToStringAuto(line));
+				return new IntPtr(TRUE);
+			}
+			catch (Exception)
+			{
+				//pass
+			}
+			return new IntPtr(FALSE);
+		}
+		[DllExport]
+		public static IntPtr WriteStandardInput(IntPtr handle, IntPtr str)
+		{
+			try
+			{
+				ProcessHolder.WriteStandardInput(handle.ToInt32(), Marshal.PtrToStringAuto(str));
+				return new IntPtr(TRUE);
+			}
+			catch (Exception)
+			{
+				//pass
+			}
+			return new IntPtr(FALSE);
+		}
+		[DllExport]
+		public static IntPtr CloseStandardInput(IntPtr handle)
+		{
+			try
+			{
+				ProcessHolder.CloseStandardInput(handle.ToInt32());
+				return new IntPtr(TRUE);
+			}
+			catch (Exception)
+			{
+				//pass
+			}
+			return new IntPtr(FALSE);
+		}
 		[DllExport]
 		public static IntPtr WaitForExit(IntPtr handle)
 		{
