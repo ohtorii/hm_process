@@ -165,6 +165,10 @@ namespace hm_process
 		{
 			_holder[handle].CloseStandardInput();
 		}
+		/// <summary>
+		/// 起動した全プロセスの標準出力を取得する
+		/// </summary>
+		/// <returns></returns>
 		public static string ReadStandardOutputAllAsString()
 		{
 			try
@@ -182,7 +186,10 @@ namespace hm_process
 			}
 			return "";
 		}
-
+		/// <summary>
+		/// 起動した全プロセスの標準出力を取得する
+		/// </summary>
+		/// <returns></returns>
 		public static IntPtr ReadStandardOutputAll()
 		{
 
@@ -191,7 +198,10 @@ namespace hm_process
 			_static_stdout_string = Marshal.StringToHGlobalUni(all);
 			return _static_stdout_string;
 		}
-
+		/// <summary>
+		/// 起動した全プロセスの標準エラーを取得する
+		/// </summary>
+		/// <returns></returns>
 		public static string ReadStandardErrorAllAsString()
 		{
 			try
@@ -209,7 +219,10 @@ namespace hm_process
 			}
 			return "";
 		}
-
+		/// <summary>
+		/// 起動した全プロセスの標準エラーを取得する
+		/// </summary>
+		/// <returns></returns>
 		public static IntPtr ReadStandardErrorAll()
 		{
 			FreeStaticStderrString();
@@ -217,7 +230,6 @@ namespace hm_process
 			_static_stderr_string = Marshal.StringToHGlobalUni(all);
 			return _static_stderr_string;
 		}
-		
 
 		public static void Kill(int handle)
 		{

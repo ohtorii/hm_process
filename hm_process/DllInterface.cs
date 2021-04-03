@@ -163,6 +163,7 @@ namespace hm_process
             }
             return new IntPtr(0);
 		}
+
 		[DllExport]
 		public static IntPtr WriteLineStandardInput(IntPtr handle, IntPtr line)
 		{

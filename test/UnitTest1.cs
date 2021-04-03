@@ -79,11 +79,11 @@ namespace test
 			ProcessHolder.WaitForExit(handle);
 
 			{
-				var textOutput = ProcessHolder.ReadStandardOutputAllAsString();
+				var textOutput = ProcessHolder.ReadStandardOutputAsString(handle);
 				Assert.AreEqual("3\nabc\nxyz", textOutput);
 			}
 			{
-				var textError = ProcessHolder.ReadStandardErrorAllAsString();
+				var textError = ProcessHolder.ReadStandardErrorAsString(handle);
 				Assert.AreEqual("", textError);
 			}
 

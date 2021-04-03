@@ -32,8 +32,11 @@ namespace hm_process
 
 			lock (locker)
 			{
-				dstProcessStdIn.Close();
-				dstProcessStdIn = null;
+				if (dstProcessStdIn != null)
+				{
+					dstProcessStdIn.Close();
+					dstProcessStdIn = null;
+				}
 			}
 		}
 		void MainLoop()
@@ -41,19 +44,22 @@ namespace hm_process
 			while (! ExitRequest())
 			{
 				var srcProcessStdIn = Console.In.ReadLine();
-				if (srcProcessStdIn.Length == 0)
-				{
-					continue;
-				}
 				//自プロセスのstdinの文字列を、相手先プロセスのstdinへ書き込む
 				lock (locker)
 				{
 					if (dstProcessStdIn != null)
 					{
+						if (srcProcessStdIn == null)
+						{
+							//Ctrl-C / Ctrl-Z
+							dstProcessStdIn.Close();
+							dstProcessStdIn = null;
+							return;
+						}
+
 						dstProcessStdIn.WriteLineAsync(srcProcessStdIn);
 					}
 				}
-				//dstProcessStdIn.WriteLine(srcProcessStdIn);
 			}
 		}
 		bool ExitRequest()
