@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -41,26 +42,54 @@ namespace hm_process
 		}
 		void MainLoop()
 		{
-			while (! ExitRequest())
+			Debug.WriteLine("[Stdin] MainLoop start");
+			try
 			{
-				var srcProcessStdIn = Console.In.ReadLine();
-				//自プロセスのstdinの文字列を、相手先プロセスのstdinへ書き込む
-				lock (locker)
+				while (!ExitRequest())
 				{
-					if (dstProcessStdIn != null)
+					/*Debug.WriteLine("[Stdin] Peek start.");
+					if (Console.In.Peek() == -1)
 					{
-						if (srcProcessStdIn == null)
+						Debug.WriteLine("[Stdin] Peek continue.");
+						continue;
+					}
+					*/
+					Debug.WriteLine("[Stdin] ReadLine start.");
+					//var c = Console.In.Read();
+					var srcStr = Console.In.ReadLine();
+					Debug.WriteLine("[Stdin] ReadLine finish.");
+					//自プロセスのstdinの文字列を、相手先プロセスのstdinへ書き込む
+					lock (locker)
+					{
+						if (dstProcessStdIn != null)
 						{
-							//Ctrl-C / Ctrl-Z
-							dstProcessStdIn.Close();
-							dstProcessStdIn = null;
-							return;
-						}
+							if (srcStr == null)
+							{
+								//Ctrl-C / Ctrl-Z
+								dstProcessStdIn.Close();
+								dstProcessStdIn = null;
 
-						dstProcessStdIn.WriteLineAsync(srcProcessStdIn);
+								Debug.WriteLine("[Stdin] Close");
+
+								return;
+							}
+
+							Debug.Write(string.Format("[Stdin] Len={0}: {1}", srcStr.Length, srcStr));
+							dstProcessStdIn.WriteLine(srcStr);
+							
+							
+							//Debug.Write(string.Format("[Stdin] {1}", c));
+							//dstProcessStdIn.Write(c);
+						}
 					}
 				}
 			}
+			catch (Exception e)
+			{
+				Debug.WriteLine(string.Format("[Stdin-Err] Exception!!",e.ToString()));
+			}
+
+			Debug.WriteLine("[Stdin] MainLoop finish");
 		}
 		bool ExitRequest()
 		{
